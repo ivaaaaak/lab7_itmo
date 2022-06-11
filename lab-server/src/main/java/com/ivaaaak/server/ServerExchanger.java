@@ -20,7 +20,7 @@ public class ServerExchanger {
 
     private static final Logger LOGGER = Server.LOGGER;
     private final int maxMetaData = 4;
-    private final int serverWaitingPeriod = 100;
+    private final int serverWaitingPeriod = 200;
     private ServerSocket serverSocket;
 
     public ServerExchanger() {

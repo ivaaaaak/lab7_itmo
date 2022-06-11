@@ -66,7 +66,6 @@ public class PeopleTable {
         String insert = "INSERT INTO People VALUES(default, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
         try (PreparedStatement statement = connection.prepareStatement(insert)) {
             setStatementParameters(statement, element, false);
-            System.out.println(statement);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
             return resultSet.getInt("id");
@@ -80,7 +79,6 @@ public class PeopleTable {
         statement.setString(PARAMETER_NAME, person.getName());
         statement.setInt(PARAMETER_COORDINATE_X, person.getCoordinates().getX());
         statement.setDouble(PARAMETER_COORDINATE_Y, person.getCoordinates().getY());
-        System.out.println(person.getCreationDate());
         statement.setTimestamp(PARAMETER_CREATION_DATE, Timestamp.valueOf(person.getCreationDate()));
         statement.setFloat(PARAMETER_HEIGHT, person.getHeight());
         statement.setFloat(PARAMETER_WEIGHT, person.getWeight());

@@ -78,7 +78,7 @@ public final class Server {
                         CACHED_THREAD_POOL.shutdown();
                         FORK_JOIN_POOL.shutdown();
                         while (!FIXED_THREAD_POOL.isTerminated()) {
-                            TimeUnit.MILLISECONDS.sleep(2);
+                            TimeUnit.NANOSECONDS.sleep(2);
                         }
                         CLIENTS.forEach(Server::closeSocket);
                         break;
