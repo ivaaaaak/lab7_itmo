@@ -49,7 +49,7 @@ public final class Server {
                 String password = args[2];
 
                 try (ServerSocket serverSocket = new ServerSocket(serverPort);
-                     Connection connection = DriverManager.getConnection("jdbc:postgresql://pg:5432/studs", username, password)) {
+                     Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/studs", username, password)) {
                     SERVER_EXCHANGER.setServerSocket(serverSocket);
                     DATA_BASE_MANAGER.setConnection(connection);
                     LOGGER.info("Successfully made a connection with the database");

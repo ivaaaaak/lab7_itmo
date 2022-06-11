@@ -3,7 +3,7 @@ package com.ivaaaak.common.commands;
 import com.ivaaaak.common.data.Location;
 import com.ivaaaak.common.data.Person;
 import com.ivaaaak.common.util.CollectionStorable;
-import com.ivaaaak.common.util.PersonMakeable;
+import com.ivaaaak.common.util.PersonMaker;
 
 public class FilterByLocationCommand extends Command implements GeneratedArgumentCommand {
 
@@ -19,7 +19,7 @@ public class FilterByLocationCommand extends Command implements GeneratedArgumen
     }
 
     @Override
-    public void generateArgument(PersonMakeable personMaker) {
+    public void generateArgument(PersonMaker personMaker) {
         locationArg = personMaker.makeLocation();
     }
 }

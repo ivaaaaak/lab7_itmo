@@ -3,7 +3,7 @@ package com.ivaaaak.common.commands;
 
 import com.ivaaaak.common.data.Person;
 import com.ivaaaak.common.util.CollectionStorable;
-import com.ivaaaak.common.util.PersonMakeable;
+import com.ivaaaak.common.util.PersonMaker;
 
 
 public class ReplaceIfGreaterCommand extends PrivateAccessCommand implements InputArgumentCommand, GeneratedArgumentCommand {
@@ -21,7 +21,7 @@ public class ReplaceIfGreaterCommand extends PrivateAccessCommand implements Inp
     }
 
     @Override
-    public void generateArgument(PersonMakeable personMaker) {
+    public void generateArgument(PersonMaker personMaker) {
         person = personMaker.makePerson();
     }
 

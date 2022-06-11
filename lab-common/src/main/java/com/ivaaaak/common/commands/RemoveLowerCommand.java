@@ -2,7 +2,7 @@ package com.ivaaaak.common.commands;
 
 import com.ivaaaak.common.data.Person;
 import com.ivaaaak.common.util.CollectionStorable;
-import com.ivaaaak.common.util.PersonMakeable;
+import com.ivaaaak.common.util.PersonMaker;
 
 public class RemoveLowerCommand extends PrivateAccessCommand implements GeneratedArgumentCommand {
 
@@ -18,7 +18,7 @@ public class RemoveLowerCommand extends PrivateAccessCommand implements Generate
     }
 
     @Override
-    public void generateArgument(PersonMakeable personMaker) {
+    public void generateArgument(PersonMaker personMaker) {
         person = personMaker.makePerson();
     }
 }

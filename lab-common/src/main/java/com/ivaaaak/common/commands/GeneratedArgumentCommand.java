@@ -1,8 +1,8 @@
 package com.ivaaaak.common.commands;
 
-import com.ivaaaak.common.util.PersonMakeable;
+import com.ivaaaak.common.util.PersonMaker;
 
 public interface GeneratedArgumentCommand {
 
-    void generateArgument(PersonMakeable personMaker);
+    void generateArgument(PersonMaker personMaker);
 }

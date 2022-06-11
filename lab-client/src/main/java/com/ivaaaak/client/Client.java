@@ -7,6 +7,8 @@ import com.ivaaaak.common.commands.CommandResult;
 import com.ivaaaak.common.commands.AuthorizeCommand;
 import com.ivaaaak.common.commands.PrivateAccessCommand;
 import com.ivaaaak.common.data.Person;
+import com.ivaaaak.common.util.InputManager;
+import com.ivaaaak.common.util.PersonMaker;
 
 import java.io.Console;
 import java.io.IOException;

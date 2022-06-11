@@ -3,7 +3,7 @@ package com.ivaaaak.common.commands;
 
 import com.ivaaaak.common.data.Person;
 import com.ivaaaak.common.util.CollectionStorable;
-import com.ivaaaak.common.util.PersonMakeable;
+import com.ivaaaak.common.util.PersonMaker;
 
 public class ReplaceIfLowerCommand extends PrivateAccessCommand implements InputArgumentCommand, GeneratedArgumentCommand {
 
@@ -20,7 +20,7 @@ public class ReplaceIfLowerCommand extends PrivateAccessCommand implements Input
     }
 
     @Override
-    public void generateArgument(PersonMakeable personMaker) {
+    public void generateArgument(PersonMaker personMaker) {
         person = personMaker.makePerson();
     }
 

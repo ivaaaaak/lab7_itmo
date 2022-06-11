@@ -97,6 +97,10 @@ public class Person implements Comparable<Person>, Serializable {
         this.id = id;
     }
 
+    public void setKey(Integer key) {
+        this.key = key;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -131,10 +135,6 @@ public class Person implements Comparable<Person>, Serializable {
 
     public Country getNationality() {
         return nationality;
-    }
-
-    public void setKey(Integer key) {
-        this.key = key;
     }
 
     public Integer getKey() {

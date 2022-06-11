@@ -1,7 +1,4 @@
-package com.ivaaaak.client;
-
-
-import com.ivaaaak.common.util.FileManager;
+package com.ivaaaak.common.util;
 
 import java.io.IOException;
 import java.util.ArrayDeque;

@@ -11,18 +11,8 @@ import java.util.StringJoiner;
 
 public final class FileManager {
 
-    private static String mainFilePath;
-
     private FileManager() {
 
-    }
-
-    public static void setMainFilePath(String mainFilePath) {
-        FileManager.mainFilePath = mainFilePath;
-    }
-
-    public static String getMainFilePath() {
-        return mainFilePath;
     }
 
     public static String read(final String filePath) throws IOException {
@@ -36,7 +26,6 @@ public final class FileManager {
         }
         return fileData.toString();
     }
-
 
     public static void write(String data, final String filePath) throws IOException {
         try (OutputStream os = new FileOutputStream(filePath);
