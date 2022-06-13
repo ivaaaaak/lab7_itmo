@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 public class PeopleTable {
 
     private static final int PARAMETER_KEY = 1;
@@ -61,11 +60,11 @@ public class PeopleTable {
         }
     }
 
-    public int add(Person element) throws SQLException {
+    public int add(Person element, String ownerName) throws SQLException {
         lock.lock();
         String insert = "INSERT INTO People VALUES(default, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
         try (PreparedStatement statement = connection.prepareStatement(insert)) {
-            setStatementParameters(statement, element, false);
+            setStatementParameters(statement, element, ownerName, false);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
             return resultSet.getInt("id");
@@ -74,7 +73,7 @@ public class PeopleTable {
         }
     }
 
-    public void setStatementParameters(PreparedStatement statement, Person person, boolean isUpdating) throws SQLException {
+    public void setStatementParameters(PreparedStatement statement, Person person, String ownerName, boolean isUpdating) throws SQLException {
         statement.setInt(PARAMETER_KEY, person.getKey());
         statement.setString(PARAMETER_NAME, person.getName());
         statement.setInt(PARAMETER_COORDINATE_X, person.getCoordinates().getX());
@@ -98,7 +97,7 @@ public class PeopleTable {
             statement.setNull(PARAMETER_LOCATION_Z, Types.INTEGER);
         }
         if (!isUpdating) {
-            statement.setString(PARAMETER_OWNER_LOGIN, person.getOwnerName());
+            statement.setString(PARAMETER_OWNER_LOGIN, ownerName);
         }
     }
 
@@ -143,7 +142,7 @@ public class PeopleTable {
                 + "location_z = ?"
                 + "WHERE (id = " + oldPerson.getId() + " AND owner_login = '" + ownerName + "')";
         try (PreparedStatement statement = connection.prepareStatement(update)) {
-            setStatementParameters(statement, newPerson, true);
+            setStatementParameters(statement, newPerson, ownerName, true);
             return statement.executeUpdate();
         } finally {
             lock.unlock();
@@ -165,32 +164,26 @@ public class PeopleTable {
         return people;
     }
 
-    public Person mapRowToObject(ResultSet resultSet) {
-        try {
-            Person person = new Person(
-                    resultSet.getString("name"),
-                    new Coordinates(
-                            resultSet.getInt("coordinate_x"),
-                            resultSet.getDouble("coordinate_y")
-                    ),
-                    resultSet.getTimestamp("creation_date").toLocalDateTime(),
-                    resultSet.getFloat("height"),
-                    resultSet.getFloat("weight"),
-                    Color.valueOf(resultSet.getString("hair_color")),
-                    resultSet.getString("nationality") != null ? Country.valueOf(resultSet.getString("nationality")) : null,
-                    new Location(
-                            resultSet.getLong("location_x"),
-                            resultSet.getInt("location_y"),
-                            resultSet.getInt("location_x")
-                    ),
-                    resultSet.getString("owner_login")
+    public Person mapRowToObject(ResultSet resultSet) throws SQLException {
+        Person person = new Person(
+                resultSet.getString("name"),
+                new Coordinates(
+                        resultSet.getInt("coordinate_x"),
+                        resultSet.getDouble("coordinate_y")
+                ),
+                resultSet.getTimestamp("creation_date").toLocalDateTime(),
+                resultSet.getFloat("height"),
+                resultSet.getFloat("weight"),
+                Color.valueOf(resultSet.getString("hair_color")),
+                resultSet.getString("nationality") != null ? Country.valueOf(resultSet.getString("nationality")) : null,
+                new Location(
+                        resultSet.getLong("location_x"),
+                        resultSet.getInt("location_y"),
+                        resultSet.getInt("location_x")
+                )
             );
             person.setId(resultSet.getInt("id"));
             person.setKey(resultSet.getInt("key"));
             return person;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }
