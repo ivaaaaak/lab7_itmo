@@ -1,16 +1,23 @@
 package com.ivaaaak.common.commands;
 
-import com.ivaaaak.common.util.CollectionStorable;
+import com.ivaaaak.common.util.PeopleCollectionStorable;
 
-public class ClearCommand extends PrivateAccessCommand {
+import java.sql.SQLException;
 
-    private final String login = PrivateAccessCommand.getLogin();
+public class ClearCommand extends Command {
+
+    public ClearCommand(String login, String password) {
+        super(login, password);
+    }
 
     @Override
-    public CommandResult execute(CollectionStorable collectionStorage) {
-        if (collectionStorage.clear(login)) {
+    public CommandResult execute(PeopleCollectionStorable collectionStorage) {
+        try {
+            collectionStorage.clear(getLogin());
             return new CommandResult("All your elements have been deleted");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new CommandResult("Something went wrong on the server");
         }
-        return new CommandResult("Something went wrong on the server");
     }
 }

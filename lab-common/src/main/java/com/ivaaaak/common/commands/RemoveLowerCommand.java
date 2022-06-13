@@ -1,20 +1,28 @@
 package com.ivaaaak.common.commands;
 
 import com.ivaaaak.common.data.Person;
-import com.ivaaaak.common.util.CollectionStorable;
+import com.ivaaaak.common.util.PeopleCollectionStorable;
 import com.ivaaaak.common.util.PersonMaker;
 
-public class RemoveLowerCommand extends PrivateAccessCommand implements GeneratedArgumentCommand {
+import java.sql.SQLException;
 
-    private final String login = PrivateAccessCommand.getLogin();
+public class RemoveLowerCommand extends Command implements GeneratedArgumentCommand {
+
     private Person person;
 
+    public RemoveLowerCommand(String login, String password) {
+        super(login, password);
+    }
+
     @Override
-    public CommandResult execute(CollectionStorable collectionStorage) {
-        if (collectionStorage.removeLowerPeople(person, login)) {
+    public CommandResult execute(PeopleCollectionStorable collectionStorage) {
+        try {
+            collectionStorage.removeLowerPeople(person, getLogin());
             return new CommandResult("Lower elements were removed");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new CommandResult("Something went wrong on the server");
         }
-        return new CommandResult("Something went wrong on the server");
     }
 
     @Override

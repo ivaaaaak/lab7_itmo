@@ -18,7 +18,6 @@ public class Person implements Comparable<Person>, Serializable {
     private final Country nationality; //может быть null
     private final Location location; // может быть null
     private Integer key;
-    private final String ownerName;
 
     @SuppressWarnings("ParameterNumber")
     public Person(String name,
@@ -27,8 +26,7 @@ public class Person implements Comparable<Person>, Serializable {
                   float weight,
                   Color hairColor,
                   Country nationality,
-                  Location location,
-                  String ownerName) {
+                  Location location) {
         this.name = name;
         this.coordinates = coordinates;
         this.creationDate = LocalDateTime.now();
@@ -37,7 +35,6 @@ public class Person implements Comparable<Person>, Serializable {
         this.hairColor = hairColor;
         this.nationality = nationality;
         this.location = location;
-        this.ownerName = ownerName;
     }
     @SuppressWarnings("ParameterNumber")
     public Person(String name,
@@ -47,8 +44,7 @@ public class Person implements Comparable<Person>, Serializable {
                   float weight,
                   Color hairColor,
                   Country nationality,
-                  Location location,
-                  String ownerName) {
+                  Location location) {
         this.name = name;
         this.coordinates = coordinates;
         this.creationDate = creationDate;
@@ -57,12 +53,11 @@ public class Person implements Comparable<Person>, Serializable {
         this.hairColor = hairColor;
         this.nationality = nationality;
         this.location = location;
-        this.ownerName = ownerName;
     }
 
     @Override
     public String toString() {
-        return "Person{"
+        return key + " = Person{"
                 + "id=" + id
                 + ", name='" + name + '\''
                 + ", coordinates=" + coordinates
@@ -71,8 +66,7 @@ public class Person implements Comparable<Person>, Serializable {
                 + ", weight=" + weight
                 + ", hairColor=" + hairColor
                 + ", nationality=" + nationality
-                + ", location=" + location
-                + ", ownerName='" + ownerName + '\''
+                + ", location=" + location + '\''
                 + '}';
     }
 
@@ -141,9 +135,6 @@ public class Person implements Comparable<Person>, Serializable {
         return key;
     }
 
-    public String getOwnerName() {
-        return ownerName;
-    }
 
     @Override
     public int compareTo(Person o) {

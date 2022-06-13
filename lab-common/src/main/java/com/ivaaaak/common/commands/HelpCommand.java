@@ -1,12 +1,16 @@
 package com.ivaaaak.common.commands;
 
-import com.ivaaaak.common.util.CollectionStorable;
+import com.ivaaaak.common.util.PeopleCollectionStorable;
 
 
 public class HelpCommand extends Command {
 
+    public HelpCommand(String login, String password) {
+        super(login, password);
+    }
+
     @Override
-    public CommandResult execute(CollectionStorable collectionStorage) {
+    public CommandResult execute(PeopleCollectionStorable collectionStorage) {
         return new CommandResult("help : вывести справку по доступным командам\n"
                 + "info : вывести информацию о коллекции \n"
                 + "show : вывести все элементы коллекции в строковом представлении\n"

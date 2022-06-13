@@ -12,14 +12,12 @@ import java.util.function.Predicate;
 
 public class PersonMaker {
 
-    private final String ownerName;
     private final InputManager inputManager;
     private final Checker checker;
 
-    public PersonMaker(InputManager inputManager, String ownerName) {
+    public PersonMaker(InputManager inputManager) {
         this.inputManager = inputManager;
         this.checker = new Checker(inputManager);
-        this.ownerName = ownerName;
     }
 
     public Person makePerson() {
@@ -58,7 +56,7 @@ public class PersonMaker {
         if (!answer.isEmpty() && "+".equals(answer)) {
             location = makeLocation();
         }
-        return new Person(name, coordinates, height, weight, hairColor, nationality, location, ownerName);
+        return new Person(name, coordinates, height, weight, hairColor, nationality, location);
     }
 
     public Coordinates makeCoordinates() {

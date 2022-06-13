@@ -1,8 +1,11 @@
 package com.ivaaaak.server;
 
+import com.ivaaaak.common.commands.AuthorizeCommand;
 import com.ivaaaak.common.commands.Command;
 import com.ivaaaak.common.commands.CommandResult;
 import com.ivaaaak.common.util.Pair;
+import com.ivaaaak.server.Collections.PeopleCollectionStorage;
+import com.ivaaaak.server.Collections.UsersCollectionStorage;
 import com.ivaaaak.server.DataBase.DataBaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,11 +14,11 @@ import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -30,12 +33,11 @@ public final class Server {
 
     private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
-    private static final ExecutorService FIXED_THREAD_POOL = Executors.newFixedThreadPool(5);
+    private static final ExecutorService FIXED_THREAD_POOL = Executors.newFixedThreadPool(4);
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
-    private static final ConcurrentLinkedQueue<Socket> CLIENTS = new ConcurrentLinkedQueue<>();
-    private static final ConcurrentLinkedQueue<Pair<Socket, Command>> READY_COMMANDS = new ConcurrentLinkedQueue<>();
-    private static final ConcurrentLinkedQueue<Pair<Socket, CommandResult>> READY_RESULTS = new ConcurrentLinkedQueue<>();
-    private static CollectionStorage collectionStorage;
+    private static PeopleCollectionStorage peopleCollectionStorage;
+    private static UsersCollectionStorage usersCollectionStorage;
 
     private Server() {
         throw new UnsupportedOperationException("This is an utility class and can not be instantiated");
@@ -53,7 +55,8 @@ public final class Server {
                     SERVER_EXCHANGER.setServerSocket(serverSocket);
                     DATA_BASE_MANAGER.setConnection(connection);
                     LOGGER.info("Successfully made a connection with the database");
-                    collectionStorage = new CollectionStorage(DATA_BASE_MANAGER);
+                    peopleCollectionStorage = new PeopleCollectionStorage(DATA_BASE_MANAGER);
+                    usersCollectionStorage = new UsersCollectionStorage(DATA_BASE_MANAGER);
                     startCycle();
                 } catch (IOException e) {
                     LOGGER.error("Failed to open server socket:", e);
@@ -77,14 +80,14 @@ public final class Server {
                         FIXED_THREAD_POOL.shutdown();
                         CACHED_THREAD_POOL.shutdown();
                         FORK_JOIN_POOL.shutdown();
+                        EXECUTOR.shutdown();
                         while (!FIXED_THREAD_POOL.isTerminated()) {
                             TimeUnit.NANOSECONDS.sleep(2);
                         }
-                        CLIENTS.forEach(Server::closeSocket);
+                        SERVER_EXCHANGER.closeAllClients();
                         break;
                     }
                 }
-                CLIENTS.removeIf(Socket::isClosed);
                 acceptNewClients();
                 readCommands();
                 executeCommands();
@@ -98,29 +101,27 @@ public final class Server {
     }
 
     private static void acceptNewClients() {
-        try {
-            Socket clientSocket = SERVER_EXCHANGER.acceptConnection();
-            if (clientSocket != null) {
-                CLIENTS.offer(clientSocket);
+        EXECUTOR.submit(() -> {
+            try {
+                SERVER_EXCHANGER.acceptConnection();
+            } catch (IOException e) {
+                LOGGER.error("Failed to open new client socket: ", e);
             }
-        } catch (IOException e) {
-            LOGGER.error("Failed to open new client socket: ", e);
-        }
+        });
     }
 
     private static void readCommands() {
-        for (Socket clientSocket : CLIENTS) {
+        Socket clientSocket = SERVER_EXCHANGER.getFirstClient();
+        if (clientSocket != null) {
             FIXED_THREAD_POOL.submit(
                     () -> {
                         try {
-                            Command newCommand = SERVER_EXCHANGER.receiveCommand(clientSocket);
-                            if (newCommand != null) {
-                                READY_COMMANDS.offer(new Pair<>(clientSocket, newCommand));
-                            }
+                            SERVER_EXCHANGER.receiveCommand(clientSocket);
+                            SERVER_EXCHANGER.putClient(clientSocket);
                         } catch (StreamCorruptedException e) {
                             LOGGER.error("Failed to read a command from client {}: ", clientSocket.getRemoteSocketAddress(), e);
                         } catch (IOException e) {
-                            closeSocket(clientSocket);
+                            SERVER_EXCHANGER.closeSocket(clientSocket);
                         } catch (ClassNotFoundException e) {
                             LOGGER.error("Received invalid data from client {}", clientSocket.getRemoteSocketAddress(), e);
                         }
@@ -129,28 +130,37 @@ public final class Server {
 
     }
 
-    private static void closeSocket(Socket clientSocket) {
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            LOGGER.error("Failed to close client's socket", e);
-        }
-    }
-
     private static void executeCommands() {
-        Pair<Socket, Command> commandPair = READY_COMMANDS.poll();
+        Pair<Socket, Command> commandPair = SERVER_EXCHANGER.getReadyCommand();
         if (commandPair != null) {
             FORK_JOIN_POOL.submit(() -> {
                 Socket clientSocket = commandPair.getFirst();
                 Command currentCommand = commandPair.getSecond();
-                CommandResult result = currentCommand.execute(collectionStorage);
-                READY_RESULTS.offer(new Pair<>(clientSocket, result));
+                processCommand(clientSocket, currentCommand);
             });
         }
     }
 
+    private static void processCommand(Socket clientSocket, Command currentCommand) {
+        if (currentCommand instanceof AuthorizeCommand) {
+            ((AuthorizeCommand) currentCommand).setUsersCollectionStorage(usersCollectionStorage);
+            CommandResult result = currentCommand.execute(peopleCollectionStorage);
+            SERVER_EXCHANGER.putReadyResult(new Pair<>(clientSocket, result));
+        } else {
+            try {
+                if (usersCollectionStorage.checkLoginAndPassword(currentCommand.getLogin(), currentCommand.getPassword())) {
+                    CommandResult result = currentCommand.execute(peopleCollectionStorage);
+                    SERVER_EXCHANGER.putReadyResult(new Pair<>(clientSocket, result));
+                }
+            } catch (NoSuchAlgorithmException e) {
+                LOGGER.error("Failed to encrypt password", e);
+                SERVER_EXCHANGER.putReadyResult(new Pair<>(clientSocket, new CommandResult("Something went wrong on the server")));
+            }
+        }
+    }
+
     private static void sendResults() {
-        Pair<Socket, CommandResult> resultPair = READY_RESULTS.poll();
+        Pair<Socket, CommandResult> resultPair = SERVER_EXCHANGER.getReadyResult();
         if (resultPair != null) {
             CACHED_THREAD_POOL.submit(() -> {
                 Socket clientSocket = resultPair.getFirst();

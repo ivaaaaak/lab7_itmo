@@ -3,6 +3,7 @@ package com.ivaaaak.common.commands;
 import java.util.function.Function;
 
 public interface InputArgumentCommand {
+
     default  <T> T checkArgument(String arg, Function<String, T> converter) {
         if (arg.isEmpty()) {
             System.out.println("This command needs an argument");

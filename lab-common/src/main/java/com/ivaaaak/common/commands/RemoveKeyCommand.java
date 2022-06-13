@@ -1,19 +1,29 @@
 package com.ivaaaak.common.commands;
 
-import com.ivaaaak.common.util.CollectionStorable;
+import com.ivaaaak.common.util.PeopleCollectionStorable;
 
-public class RemoveKeyCommand extends PrivateAccessCommand implements InputArgumentCommand {
+import java.sql.SQLException;
 
-    private final String login = PrivateAccessCommand.getLogin();
+public class RemoveKeyCommand extends Command implements InputArgumentCommand {
+
     private Integer key;
 
+    public RemoveKeyCommand(String login, String password) {
+        super(login, password);
+    }
+
     @Override
-    public CommandResult execute(CollectionStorable collectionStorage) {
+    public CommandResult execute(PeopleCollectionStorable collectionStorage) {
         if (collectionStorage.getPeopleCollection().containsKey(key)) {
-            if (collectionStorage.removePerson(key, login)) {
-                return new CommandResult("The element has been removed");
+            try {
+                if (collectionStorage.removePerson(key, getLogin())) {
+                    return new CommandResult("The element has been removed");
+                }
+                return new CommandResult("You don't have access to this element");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return new CommandResult("Something went wrong on the server");
             }
-            return new CommandResult("You don't have access to this element");
         }
         return new CommandResult("Collection doesn't contain this key");
     }

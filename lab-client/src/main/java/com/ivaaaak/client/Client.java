@@ -5,7 +5,6 @@ import com.ivaaaak.common.commands.GeneratedArgumentCommand;
 import com.ivaaaak.common.commands.InputArgumentCommand;
 import com.ivaaaak.common.commands.CommandResult;
 import com.ivaaaak.common.commands.AuthorizeCommand;
-import com.ivaaaak.common.commands.PrivateAccessCommand;
 import com.ivaaaak.common.data.Person;
 import com.ivaaaak.common.util.InputManager;
 import com.ivaaaak.common.util.PersonMaker;
@@ -13,14 +12,16 @@ import com.ivaaaak.common.util.PersonMaker;
 import java.io.Console;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
 import java.util.StringJoiner;
 
 public final class Client {
+
+    private static boolean isAuthorized = false;
     private static String login;
     private static String password;
     private static ClientExchanger clientExchanger;
     private static final InputManager INPUT_MANAGER = new InputManager();
+    private static final PersonMaker PERSON_MAKER = new PersonMaker(INPUT_MANAGER);
 
     private Client() {
         throw new UnsupportedOperationException("This is an utility class and can not be instantiated");
@@ -35,14 +36,19 @@ public final class Client {
 
                 try (SocketChannel channel = clientExchanger.openChannelToServer()) {
                     clientExchanger.setSocketChannel(channel);
-                    boolean isAuthorized = false;
                     while (!isAuthorized) {
-                        isAuthorized = authorize();
+                        System.out.println("If you want to end the program type \"exit\"");
+                        System.out.println("If you haven't been already registered type \"+\"");
+                        String answer = INPUT_MANAGER.readLine();
+                        if ("exit".equals(answer)) {
+                            return;
+                        } else {
+                            isAuthorized = authorize(answer);
+                        }
                     }
-                    PrivateAccessCommand.setLogin(login);
                     startMainCycle();
                 } catch (IOException e) {
-                    System.err.println("Failed to open channel with server. There isn't working server on these host and port.");
+                    System.err.println("Failed to open channel with server");
                     e.printStackTrace();
                 }
             } catch (NumberFormatException e) {
@@ -54,8 +60,7 @@ public final class Client {
     }
 
     private static void startMainCycle() {
-        PersonMaker personMaker = new PersonMaker(INPUT_MANAGER, login);
-        HashMap<String, Command> commands = CommandStore.getCommands();
+        CommandStore commandStore = new CommandStore(login, password);
         while (true) {
             String[] command = INPUT_MANAGER.readLine().split(" ");
             String name = command[0];
@@ -73,8 +78,8 @@ public final class Client {
                 }
                 continue;
             }
-            if (commands.containsKey(name)) {
-                Command currentCommand = commands.get(name);
+            if (commandStore.getCommands().containsKey(name)) {
+                Command currentCommand = commandStore.getCommands().get(name);
                 if (currentCommand instanceof InputArgumentCommand) {
                     boolean isCorrect = ((InputArgumentCommand) currentCommand).prepareArguments(arg);
                     if (!isCorrect) {
@@ -82,7 +87,7 @@ public final class Client {
                     }
                 }
                 if (currentCommand instanceof GeneratedArgumentCommand) {
-                    ((GeneratedArgumentCommand) currentCommand).generateArgument(personMaker);
+                    ((GeneratedArgumentCommand) currentCommand).generateArgument(PERSON_MAKER);
                 }
                 processCommand(currentCommand);
             } else {
@@ -111,11 +116,8 @@ public final class Client {
         }
     }
 
-
-    private static boolean authorize() {
+    private static boolean authorize(String answer) {
         AuthorizeCommand authorizeCommand;
-        System.out.println("If you haven't been already registered type +");
-        String answer = INPUT_MANAGER.readLine();
         if ("+".equals(answer)) {
             readLoginAndPassword();
             authorizeCommand = new AuthorizeCommand(login, password, false);
@@ -156,7 +158,7 @@ public final class Client {
         if (people != null) {
             StringJoiner output = new StringJoiner("\n\n");
             for (Person person : people) {
-                output.add(person.getKey() + " = " + person);
+                output.add(person.toString());
             }
             System.out.println(output);
         }

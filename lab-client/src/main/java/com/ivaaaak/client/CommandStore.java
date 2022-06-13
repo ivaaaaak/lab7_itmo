@@ -19,28 +19,29 @@ import java.util.HashMap;
 
 public final class CommandStore {
 
-    private static final HashMap<String, Command> COMMANDS = new HashMap<>();
+    private final HashMap<String, Command> commands = new HashMap<>();
 
-    private CommandStore() {
+    public CommandStore(String login, String password) {
+        initializeCommands(login, password);
     }
 
-    static {
-        COMMANDS.put("clear", new ClearCommand());
-        COMMANDS.put("filter_by_location", new FilterByLocationCommand());
-        COMMANDS.put("filter_starts_with_name", new FilterStartsWithNameCommand());
-        COMMANDS.put("help", new HelpCommand());
-        COMMANDS.put("info", new InfoCommand());
-        COMMANDS.put("insert", new InsertCommand());
-        COMMANDS.put("max_by_hair_color", new MaxByHairColorCommand());
-        COMMANDS.put("remove_key", new RemoveKeyCommand());
-        COMMANDS.put("remove_lower", new RemoveLowerCommand());
-        COMMANDS.put("replace_if_greater", new ReplaceIfGreaterCommand());
-        COMMANDS.put("replace_if_lower", new ReplaceIfLowerCommand());
-        COMMANDS.put("show", new ShowCommand());
-        COMMANDS.put("update", new UpdateCommand());
+    private void initializeCommands(String login, String password) {
+        commands.put("clear", new ClearCommand(login, password));
+        commands.put("filter_by_location", new FilterByLocationCommand(login, password));
+        commands.put("filter_starts_with_name", new FilterStartsWithNameCommand(login, password));
+        commands.put("help", new HelpCommand(login, password));
+        commands.put("info", new InfoCommand(login, password));
+        commands.put("insert", new InsertCommand(login, password));
+        commands.put("max_by_hair_color", new MaxByHairColorCommand(login, password));
+        commands.put("remove_key", new RemoveKeyCommand(login, password));
+        commands.put("remove_lower", new RemoveLowerCommand(login, password));
+        commands.put("replace_if_greater", new ReplaceIfGreaterCommand(login, password));
+        commands.put("replace_if_lower", new ReplaceIfLowerCommand(login, password));
+        commands.put("show", new ShowCommand(login, password));
+        commands.put("update", new UpdateCommand(login, password));
     }
 
-    public static HashMap<String, Command> getCommands() {
-        return COMMANDS;
+    public HashMap<String, Command> getCommands() {
+        return commands;
     }
 }

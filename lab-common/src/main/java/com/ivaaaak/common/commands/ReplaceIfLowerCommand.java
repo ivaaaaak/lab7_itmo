@@ -2,19 +2,29 @@ package com.ivaaaak.common.commands;
 
 
 import com.ivaaaak.common.data.Person;
-import com.ivaaaak.common.util.CollectionStorable;
+import com.ivaaaak.common.util.PeopleCollectionStorable;
 import com.ivaaaak.common.util.PersonMaker;
 
-public class ReplaceIfLowerCommand extends PrivateAccessCommand implements InputArgumentCommand, GeneratedArgumentCommand {
+import java.sql.SQLException;
 
-    private final String login = PrivateAccessCommand.getLogin();
+public class ReplaceIfLowerCommand extends Command implements InputArgumentCommand, GeneratedArgumentCommand {
+
     private Integer key;
     private Person person;
 
+    public ReplaceIfLowerCommand(String login, String password) {
+        super(login, password);
+    }
+
     @Override
-    public CommandResult execute(CollectionStorable collectionStorage) {
+    public CommandResult execute(PeopleCollectionStorable collectionStorage) {
         if (collectionStorage.getPeopleCollection().containsKey(key)) {
-            return collectionStorage.replaceIfNewLower(key, person, login);
+            try {
+                return collectionStorage.replaceIfNewLower(key, person, getLogin());
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return new CommandResult("Something went wrong on the server");
+            }
         }
         return new CommandResult("Collection doesn't contain this key");
     }

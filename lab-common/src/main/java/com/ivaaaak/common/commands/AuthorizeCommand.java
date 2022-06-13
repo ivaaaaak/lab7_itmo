@@ -1,24 +1,26 @@
 package com.ivaaaak.common.commands;
 
-import com.ivaaaak.common.util.CollectionStorable;
+import com.ivaaaak.common.util.PeopleCollectionStorable;
+import com.ivaaaak.common.util.UsersCollectionStorable;
 
 public class AuthorizeCommand extends Command {
 
-    private final String login;
-    private final String password;
+    private UsersCollectionStorable usersCollectionStorage;
     private final boolean isRegistered;
 
     public AuthorizeCommand(String login, String password, boolean isRegistered) {
-        this.login = login;
-        this.password = password;
+        super(login, password);
         this.isRegistered = isRegistered;
     }
 
-    public CommandResult execute(CollectionStorable collectionStorage) {
+    public CommandResult execute(PeopleCollectionStorable collectionStorage) {
         if (isRegistered) {
-           return collectionStorage.authorizeUser(login, password);
+           return usersCollectionStorage.authorizeUser(getLogin(), getPassword());
         }
-        return collectionStorage.registerUser(login, password);
+        return usersCollectionStorage.registerUser(getLogin(), getPassword());
     }
 
+    public void setUsersCollectionStorage(UsersCollectionStorable usersCollectionStorage) {
+        this.usersCollectionStorage = usersCollectionStorage;
+    }
 }
