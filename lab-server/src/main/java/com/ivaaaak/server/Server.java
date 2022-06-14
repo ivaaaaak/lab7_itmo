@@ -34,7 +34,7 @@ public final class Server {
     private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static final ExecutorService FIXED_THREAD_POOL = Executors.newFixedThreadPool(5);
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(3);
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
     private static PeopleCollectionStorage peopleCollectionStorage;
     private static UsersCollectionStorage usersCollectionStorage;
@@ -73,6 +73,7 @@ public final class Server {
 
     private static void startCycle() {
         try (Scanner scanner = new Scanner(System.in)) {
+            acceptNewClients();
             while (true) {
                 if (System.in.available() > 0) {
                     String input = scanner.nextLine();
@@ -88,11 +89,9 @@ public final class Server {
                         break;
                     }
                 }
-                acceptNewClients();
                 readCommands();
                 executeCommands();
                 sendResults();
-                TimeUnit.MILLISECONDS.sleep(2);
             }
         } catch (IOException e) {
             LOGGER.error("Something's wrong with server's console output: ", e);
@@ -103,10 +102,12 @@ public final class Server {
 
     private static void acceptNewClients() {
         EXECUTOR.submit(() -> {
-            try {
-                SERVER_EXCHANGER.acceptConnection();
-            } catch (IOException e) {
-                LOGGER.error("Failed to open new client socket: ", e);
+            while (!EXECUTOR.isShutdown()) {
+                try {
+                    SERVER_EXCHANGER.acceptConnection();
+                } catch (IOException e) {
+                    LOGGER.error("Failed to open new client socket: ", e);
+                }
             }
         });
     }
