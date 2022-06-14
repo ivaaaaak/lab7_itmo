@@ -34,7 +34,7 @@ public final class Server {
     private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static final ExecutorService FIXED_THREAD_POOL = Executors.newFixedThreadPool(5);
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(3);
 
     private static PeopleCollectionStorage peopleCollectionStorage;
     private static UsersCollectionStorage usersCollectionStorage;
@@ -51,7 +51,7 @@ public final class Server {
                 String password = args[2];
 
                 try (ServerSocket serverSocket = new ServerSocket(serverPort);
-                     Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/studs", username, password)) {
+                     Connection connection = DriverManager.getConnection("jdbc:postgresql://pg:5432/studs", username, password)) {
                     SERVER_EXCHANGER.setServerSocket(serverSocket);
                     DATA_BASE_MANAGER.setConnection(connection);
                     LOGGER.info("Successfully made a connection with the database");
@@ -92,6 +92,7 @@ public final class Server {
                 readCommands();
                 executeCommands();
                 sendResults();
+                TimeUnit.MILLISECONDS.sleep(2);
             }
         } catch (IOException e) {
             LOGGER.error("Something's wrong with server's console output: ", e);

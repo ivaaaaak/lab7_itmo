@@ -25,7 +25,6 @@ public class ServerExchanger {
     private final ConcurrentLinkedQueue<Pair<Socket, Command>> readyCommands = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Pair<Socket, CommandResult>> readyResults = new ConcurrentLinkedQueue<>();
     private final int maxMetaData = 4;
-    private final int serverWaitingPeriod = 50;
     private ServerSocket serverSocket;
 
     public ServerExchanger() {
@@ -39,7 +38,7 @@ public class ServerExchanger {
 
     public void acceptConnection() throws IOException {
         try {
-            serverSocket.setSoTimeout(serverWaitingPeriod);
+            serverSocket.setSoTimeout(2);
             Socket clientSocket = serverSocket.accept();
             LOGGER.info("Established connection with client: {}", clientSocket.getRemoteSocketAddress());
             clients.offer(clientSocket);
@@ -50,10 +49,11 @@ public class ServerExchanger {
         InputStream inputStream = clientSocket.getInputStream();
         byte[] commandSize = new byte[maxMetaData];
         try {
-            clientSocket.setSoTimeout(serverWaitingPeriod);
+            final int readingWaitingPeriod = 50;
+            clientSocket.setSoTimeout(readingWaitingPeriod);
             if (inputStream.read(commandSize) != 0) {
                 byte[] command = new byte[ByteBuffer.wrap(commandSize).getInt()];
-                clientSocket.setSoTimeout(serverWaitingPeriod * 2);
+                clientSocket.setSoTimeout(readingWaitingPeriod);
                 if (inputStream.read(command) != 0) {
                     Command newCommand = (Command) deserialize(command);
                     LOGGER.info("Read command from the client {}: {}", clientSocket.getInetAddress().toString(), newCommand.toString());
