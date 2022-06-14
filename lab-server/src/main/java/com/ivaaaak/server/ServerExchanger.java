@@ -25,7 +25,7 @@ public class ServerExchanger {
     private final ConcurrentLinkedQueue<Pair<Socket, Command>> readyCommands = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Pair<Socket, CommandResult>> readyResults = new ConcurrentLinkedQueue<>();
     private final int maxMetaData = 4;
-    private final int serverWaitingPeriod = 1000;
+    private final int serverWaitingPeriod = 50;
     private ServerSocket serverSocket;
 
     public ServerExchanger() {
@@ -106,4 +106,5 @@ public class ServerExchanger {
     public void putReadyResult(Pair<Socket, CommandResult> resultPair) {
         readyResults.offer(resultPair);
     }
+
 }

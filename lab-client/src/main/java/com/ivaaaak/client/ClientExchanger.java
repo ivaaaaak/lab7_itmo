@@ -19,7 +19,7 @@ public class ClientExchanger {
     private final String host;
     private final int port;
     private final int maxMetaData = 4;
-    private final int clientWaitingPeriod = 20;
+    private final int clientWaitingPeriod = 30;
     private SocketChannel channel;
 
     public ClientExchanger(String host, int port) {

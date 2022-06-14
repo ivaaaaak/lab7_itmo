@@ -4,8 +4,8 @@ import com.ivaaaak.common.commands.AuthorizeCommand;
 import com.ivaaaak.common.commands.Command;
 import com.ivaaaak.common.commands.CommandResult;
 import com.ivaaaak.common.util.Pair;
-import com.ivaaaak.server.Collections.PeopleCollectionStorage;
-import com.ivaaaak.server.Collections.UsersCollectionStorage;
+import Collections.PeopleCollectionStorage;
+import Collections.UsersCollectionStorage;
 import com.ivaaaak.server.DataBase.DataBaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +33,8 @@ public final class Server {
 
     private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
-    private static final ExecutorService FIXED_THREAD_POOL = Executors.newFixedThreadPool(4);
-    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final ExecutorService FIXED_THREAD_POOL = Executors.newFixedThreadPool(5);
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     private static PeopleCollectionStorage peopleCollectionStorage;
     private static UsersCollectionStorage usersCollectionStorage;
@@ -77,10 +77,10 @@ public final class Server {
                 if (System.in.available() > 0) {
                     String input = scanner.nextLine();
                     if ("exit".equals(input)) {
+                        EXECUTOR.shutdownNow();
                         FIXED_THREAD_POOL.shutdown();
-                        CACHED_THREAD_POOL.shutdown();
                         FORK_JOIN_POOL.shutdown();
-                        EXECUTOR.shutdown();
+                        CACHED_THREAD_POOL.shutdown();
                         while (!FIXED_THREAD_POOL.isTerminated()) {
                             TimeUnit.NANOSECONDS.sleep(2);
                         }
@@ -127,7 +127,6 @@ public final class Server {
                         }
                     });
         }
-
     }
 
     private static void executeCommands() {
@@ -173,5 +172,4 @@ public final class Server {
             });
         }
     }
-
 }

@@ -1,4 +1,4 @@
-package com.ivaaaak.server.Collections;
+package Collections;
 
 import com.ivaaaak.common.commands.CommandResult;
 import com.ivaaaak.common.util.UsersCollectionStorable;
