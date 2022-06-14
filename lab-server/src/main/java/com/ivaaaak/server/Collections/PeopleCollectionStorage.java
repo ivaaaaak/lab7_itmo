@@ -1,4 +1,4 @@
-package Collections;
+package com.ivaaaak.server.Collections;
 
 import com.ivaaaak.common.commands.CommandResult;
 import com.ivaaaak.common.data.Location;
