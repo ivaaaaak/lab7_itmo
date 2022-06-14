@@ -37,7 +37,8 @@ public class PeopleCollectionStorage implements PeopleCollectionStorable {
 
     public void addPerson(Integer key, Person person, String ownerName) throws SQLException {
         person.setKey(key);
-        int id = peopleTable.add(person, ownerName);
+        person.setOwnerName(ownerName);
+        int id = peopleTable.add(person);
         person.setId(id);
         peopleCollection.put(key, person);
     }

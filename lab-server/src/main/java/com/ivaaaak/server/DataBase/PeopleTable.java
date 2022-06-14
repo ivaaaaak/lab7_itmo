@@ -60,11 +60,11 @@ public class PeopleTable {
         }
     }
 
-    public int add(Person element, String ownerName) throws SQLException {
+    public int add(Person element) throws SQLException {
         lock.lock();
         String insert = "INSERT INTO People VALUES(default, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
         try (PreparedStatement statement = connection.prepareStatement(insert)) {
-            setStatementParameters(statement, element, ownerName, false);
+            setStatementParameters(statement, element, false);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
             return resultSet.getInt("id");
@@ -73,7 +73,7 @@ public class PeopleTable {
         }
     }
 
-    public void setStatementParameters(PreparedStatement statement, Person person, String ownerName, boolean isUpdating) throws SQLException {
+    public void setStatementParameters(PreparedStatement statement, Person person, boolean isUpdating) throws SQLException {
         statement.setInt(PARAMETER_KEY, person.getKey());
         statement.setString(PARAMETER_NAME, person.getName());
         statement.setInt(PARAMETER_COORDINATE_X, person.getCoordinates().getX());
@@ -97,7 +97,7 @@ public class PeopleTable {
             statement.setNull(PARAMETER_LOCATION_Z, Types.INTEGER);
         }
         if (!isUpdating) {
-            statement.setString(PARAMETER_OWNER_LOGIN, ownerName);
+            statement.setString(PARAMETER_OWNER_LOGIN, person.getOwnerName());
         }
     }
 
@@ -142,7 +142,7 @@ public class PeopleTable {
                 + "location_z = ?"
                 + "WHERE (id = " + oldPerson.getId() + " AND owner_login = '" + ownerName + "')";
         try (PreparedStatement statement = connection.prepareStatement(update)) {
-            setStatementParameters(statement, newPerson, ownerName, true);
+            setStatementParameters(statement, newPerson, true);
             return statement.executeUpdate();
         } finally {
             lock.unlock();
@@ -184,6 +184,7 @@ public class PeopleTable {
             );
             person.setId(resultSet.getInt("id"));
             person.setKey(resultSet.getInt("key"));
+            person.setOwnerName(resultSet.getString("owner_login"));
             return person;
     }
 }

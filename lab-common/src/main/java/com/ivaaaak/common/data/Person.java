@@ -18,6 +18,7 @@ public class Person implements Comparable<Person>, Serializable {
     private final Country nationality; //может быть null
     private final Location location; // может быть null
     private Integer key;
+    private String ownerName;
 
     @SuppressWarnings("ParameterNumber")
     public Person(String name,
@@ -66,7 +67,8 @@ public class Person implements Comparable<Person>, Serializable {
                 + ", weight=" + weight
                 + ", hairColor=" + hairColor
                 + ", nationality=" + nationality
-                + ", location=" + location + '\''
+                + ", location=" + location
+                + ", ownerName=" + ownerName + '\''
                 + '}';
     }
 
@@ -93,6 +95,10 @@ public class Person implements Comparable<Person>, Serializable {
 
     public void setKey(Integer key) {
         this.key = key;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
     public Integer getId() {
@@ -135,6 +141,9 @@ public class Person implements Comparable<Person>, Serializable {
         return key;
     }
 
+    public String getOwnerName() {
+        return ownerName;
+    }
 
     @Override
     public int compareTo(Person o) {
